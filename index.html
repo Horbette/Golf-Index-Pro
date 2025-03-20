@@ -1,0 +1,3641 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GolfIndex Pro - Simulateur de Handicap WHS</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #27ae60;
+            --primary-dark: #219653;
+            --primary-light: #6fcf97;
+            --secondary: #3498db;
+            --secondary-dark: #2980b9;
+            --tertiary: #9b59b6;
+            --tertiary-dark: #8e44ad;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --dark-light: #34495e;
+            --light: #ecf0f1;
+            --white: #ffffff;
+            --gray: #bdc3c7;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-left: 10px;
+        }
+
+        .logo-icon {
+            font-size: 2.2rem;
+            color: var(--primary);
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            background-color: var(--dark-light);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin: 50px auto;
+            max-width: 600px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .welcome-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--white);
+        }
+
+        .welcome-screen p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        .onboarding-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .onboarding-step {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .onboarding-step.active {
+            display: block;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-title i {
+            color: var(--primary);
+        }
+
+        .step-number {
+            background-color: var(--primary);
+            color: var(--white);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .step-content {
+            margin-bottom: 20px;
+        }
+
+        .onboarding-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--dark);
+            color: var(--white);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.3);
+        }
+
+        .input-addon {
+            position: relative;
+        }
+
+        .input-addon input {
+            padding-right: 35px;
+        }
+
+        .input-addon span {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        /* Tabs system */
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background-color: var(--dark-light);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab.active {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background-color: rgba(39, 174, 96, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Main dashboard layout */
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .sidebar {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--dark-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideInLeft 0.5s ease forwards;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .content-area {
+            flex: 2;
+            min-width: 320px;
+            animation: slideInRight 0.5s ease forwards;
+        }
+
+        /* Player profile */
+        .player-profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--white);
+            margin-bottom: 15px;
+        }
+
+        .player-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .player-club {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 15px;
+        }
+
+        .handicap-display {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            padding: 10px 20px;
+            border-radius: 30px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .handicap-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .handicap-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .handicap-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .handicap-trend.down {
+            color: var(--primary-light);
+        }
+
+        .handicap-trend.up {
+            color: var(--danger);
+        }
+
+        .handicap-trend.stable {
+            color: var(--gray);
+        }
+
+        /* Key stats widgets */
+        .key-stats {
+            margin-bottom: 30px;
+        }
+
+        .stats-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-title span {
+            color: var(--gray);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card:nth-child(1)::before {
+            background-color: var(--primary);
+        }
+
+        .stat-card:nth-child(2)::before {
+            background-color: var(--secondary);
+        }
+
+        .stat-card:nth-child(3)::before {
+            background-color: var(--tertiary);
+        }
+
+        .stat-card:nth-child(4)::before {
+            background-color: var(--warning);
+        }
+
+        .stat-name {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Dashboard cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background-color: var(--dark-light);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        .card-action {
+            font-size: 0.8rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .card-action:hover {
+            color: var(--primary);
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-bg-icon {
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            font-size: 8rem;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        /* Handicap history chart card */
+        .handicap-chart-container {
+            height: 250px;
+            margin-top: 20px;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .legend-color.actual {
+            background-color: var(--primary);
+        }
+
+        .legend-color.projected {
+            background-color: var(--secondary);
+            opacity: 0.7;
+        }
+
+        /* Recent scores list */
+        .recent-scores-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 230px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .recent-scores-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .recent-scores-list::-webkit-scrollbar-track {
+            background: var(--dark);
+            border-radius: 10px;
+        }
+
+        .recent-scores-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--dark);
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: var(--transition);
+        }
+
+        .score-item:hover {
+            transform: translateX(5px);
+            background-color: rgba(39, 174, 96, 0.1);
+        }
+
+        .score-date {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .score-course {
+            flex: 1;
+            margin-left: 10px;
+            font-size: 0.9rem;
+        }
+
+        .score-value {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-gross {
+            background-color: var(--dark-light);
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .score-differential {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .score-differential.good {
+            color: var(--primary);
+        }
+
+        .score-differential.average {
+            color: var(--warning);
+        }
+
+        .score-differential.bad {
+            color: var(--danger);
+        }
+
+        /* Game statistics card */
+        .game-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .game-stat-item {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .game-stat-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .game-stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .game-stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .game-stat-trend {
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            margin-top: 5px;
+        }
+
+        .game-stat-trend.positive {
+            color: var(--primary);
+        }
+
+        .game-stat-trend.negative {
+            color: var(--danger);
+        }
+
+        .game-stat-trend.neutral {
+            color: var(--gray);
+        }
+
+        /* Game strengths radar chart */
+        .strengths-chart-container {
+            height: 220px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        /* Simulator section */
+        .simulator-section {
+            background-color: var(--dark-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .simulator-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .simulator-title i {
+            color: var(--primary);
+        }
+
+        .simulator-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .simulator-tab {
+            padding: 8px 15px;
+            background-color: var(--dark);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .simulator-tab.active {
+            background-color: var(--primary);
+        }
+
+        .simulator-tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .simulator-tab-content.active {
+            display: block;
+        }
+
+        .simulator-form {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-instructions {
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--gray);
+            line-height: 1.5;
+        }
+
+        .simulator-results {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .result-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-title {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .result-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .result-values {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .result-change {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .result-change.positive {
+            color: var(--primary);
+        }
+
+        .result-change.negative {
+            color: var(--danger);
+        }
+
+        .result-details {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Add new score section */
+        .add-score-section {
+            background-color: var(--dark-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .score-form-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .score-form-tab {
+            padding: 8px 15px;
+            background-color: var(--dark);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .score-form-tab.active {
+            background-color: var(--primary);
+        }
+
+        .score-form-content {
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .score-form-content.active {
+            display: block;
+        }
+
+        .quick-score-form {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .hole-by-hole-form {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .holes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hole-input {
+            text-align: center;
+        }
+
+        .hole-input label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            color: var(--gray);
+        }
+
+        .hole-input input {
+            width: 100%;
+            padding: 8px 0;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--dark-light);
+            color: var(--white);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .hole-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.3);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 15px;
+        }
+
+        .total-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .total-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 5px 15px;
+            background-color: var(--dark-light);
+            border-radius: 5px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .scores-history-section {
+            background-color: var(--dark-light);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .scores-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .scores-table th {
+            text-align: left;
+            padding: 12px 15px;
+            background-color: var(--dark);
+            color: var(--gray);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .scores-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .scores-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .scores-table tr:hover td {
+            background-color: rgba(39, 174, 96, 0.05);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-icon {
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-icon:hover {
+            color: var(--primary);
+        }
+
+        .action-icon.delete:hover {
+            color: var(--danger);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .strong {
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge.primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .badge.secondary {
+            background-color: var(--secondary);
+            color: var(--white);
+        }
+
+        .badge.warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+
+        .badge.danger {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        .score-additional-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .additional-stat {
+            background-color: var(--dark);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .additional-stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .additional-stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Buttons */
+        .button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .button-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .button-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .button-secondary {
+            background-color: var(--secondary);
+            color: var(--white);
+        }
+
+        .button-secondary:hover {
+            background-color: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .button-outline {
+            background-color: transparent;
+            color: var(--gray);
+            border: 1px solid var(--gray);
+        }
+
+        .button-outline:hover {
+            color: var(--white);
+            border-color: var(--white);
+        }
+
+        .button-sm {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(200%);
+            transition: transform 0.5s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar, .content-area {
+                min-width: 100%;
+            }
+            
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                padding-bottom: 5px;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .holes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-golf-ball-tee logo-icon"></i>
+                <h1>GolfIndex Pro</h1>
+            </div>
+        </header>
+
+        <!-- Welcome & Onboarding (shown only first time) -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <h2>Bienvenue sur GolfIndex Pro</h2>
+            <p>Votre simulateur personnel de handicap WHS. Suivez votre index, analysez vos performances et simulez votre évolution. Commençons par configurer votre profil.</p>
+            
+            <div class="onboarding-steps">
+                <div class="onboarding-step active" id="step1">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <div class="step-number">1</div>
+                            <span>Informations personnelles</span>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="onboarding-form">
+                            <div class="form-group">
+                                <label for="playerName">Votre nom</label>
+                                <input type="text" id="playerName" placeholder="Ex: Jean Dupont">
+                            </div>
+                            <div class="form-group">
+                                <label for="playerClub">Votre club (optionnel)</label>
+                                <input type="text" id="playerClub" placeholder="Ex: Golf de Saint-Germain">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="button button-primary" id="nextStep1">Continuer <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="onboarding-step" id="step2">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <div class="step-number">2</div>
+                            <span>Votre handicap actuel</span>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="onboarding-form">
+                            <div class="form-group">
+                                <label for="currentHandicap">Votre index actuel</label>
+                                <div class="input-addon">
+                                    <input type="number" id="currentHandicap" placeholder="Ex: 15.4" step="0.1" min="0" max="54">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Avez-vous déjà un index officiel?</label>
+                                <select id="hasOfficialHandicap">
+                                    <option value="yes">Oui, j'ai un index officiel</option>
+                                    <option value="no">Non, je débute ou je n'ai pas d'index officiel</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="button button-outline" id="prevStep2"><i class="fas fa-arrow-left"></i> Retour</button>
+                        <button class="button button-primary" id="nextStep2">Continuer <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="onboarding-step" id="step3">
+                    <div class="step-header">
+                        <div class="step-title">
+                            <div class="step-number">3</div>
+                            <span>Objectifs</span>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="onboarding-form">
+                            <div class="form-group">
+                                <label for="targetHandicap">Votre objectif d'index</label>
+                                <div class="input-addon">
+                                    <input type="number" id="targetHandicap" placeholder="Ex: 10.0" step="0.1" min="0" max="54">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="playFrequency">Fréquence de jeu</label>
+                                <select id="playFrequency">
+                                    <option value="weekly">Hebdomadaire (1+ fois par semaine)</option>
+                                    <option value="biweekly">Bimensuelle (2+ fois par mois)</option>
+                                    <option value="monthly">Mensuelle (1 fois par mois)</option>
+                                    <option value="occasionally">Occasionnelle (quelques fois par an)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button class="button button-outline" id="prevStep3"><i class="fas fa-arrow-left"></i> Retour</button>
+                        <button class="button button-primary" id="completeSetup">Terminer la configuration <i class="fas fa-check"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App UI (shown after onboarding) -->
+        <div id="mainApp" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Tableau de bord</div>
+                <div class="tab" data-tab="simulator"><i class="fas fa-calculator"></i> Simulateur</div>
+                <div class="tab" data-tab="addScore"><i class="fas fa-plus-circle"></i> Ajouter un score</div>
+                <div class="tab" data-tab="scoreHistory"><i class="fas fa-history"></i> Historique des scores</div>
+                <div class="tab" data-tab="performance"><i class="fas fa-chart-bar"></i> Performances</div>
+                <div class="tab" data-tab="settings"><i class="fas fa-cog"></i> Paramètres</div>
+            </div>
+
+            <div class="main-content">
+                <div class="sidebar">
+                    <div class="player-profile">
+                        <div class="profile-img" id="profileInitials">JD</div>
+                        <h3 class="player-name" id="profileName">Jean Dupont</h3>
+                        <div class="player-club" id="profileClub">Golf de Saint-Germain</div>
+                        <div class="handicap-display">
+                            <div class="handicap-label">Index WHS</div>
+                            <div class="handicap-value" id="handicapValue">15.4</div>
+                            <div class="handicap-trend down" id="handicapTrend">
+                                <i class="fas fa-arrow-down"></i> -0.3 sur 30 jours
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-stats">
+                        <h3 class="stats-title">Statistiques clés <span id="refreshStats"><i class="fas fa-sync-alt"></i></span></h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-name">Score moyen</div>
+                                <div class="stat-value">89</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-name">Score différentiel moyen</div>
+                                <div class="stat-value">16.8</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-name">GIR %</div>
+                                <div class="stat-value">28%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-name">Putts par tour</div>
+                                <div class="stat-value">32</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="button button-primary" id="addScoreQuick">
+                            <i class="fas fa-plus"></i> Ajouter un score
+                        </button>
+                    </div>
+                </div>
+
+                <div class="content-area">
+                    <!-- Dashboard Tab Content -->
+                    <div class="tab-content active" id="dashboardContent">
+                        <div class="dashboard-cards">
+                            <div class="dashboard-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-chart-line"></i> Évolution de l'index</h3>
+                                    <div class="card-action" id="viewFullHistory">Voir tout</div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="handicap-chart-container" id="handicapChartContainer">
+                                        <!-- Chart will be rendered here -->
+                                    </div>
+                                    <div class="chart-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-color actual"></div>
+                                            <span>Index actuel</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color projected"></div>
+                                            <span>Projection</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chart-line card-bg-icon"></i>
+                            </div>
+
+                            <div class="dashboard-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-trophy"></i> Scores récents</h3>
+                                    <div class="card-action" id="addNewScore">+ Ajouter</div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="recent-scores-list" id="recentScoresList">
+                                        <!-- Will be populated dynamically -->
+                                    </div>
+                                </div>
+                                <i class="fas fa-trophy card-bg-icon"></i>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-cards">
+                            <div class="dashboard-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-chart-pie"></i> Statistiques de jeu</h3>
+                                    <div class="card-action" id="viewAllStats">Détails</div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="game-stats-grid">
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Fairways</div>
+                                            <div class="game-stat-value">52%</div>
+                                            <div class="game-stat-trend positive">
+                                                <i class="fas fa-arrow-up"></i> +5%
+                                            </div>
+                                        </div>
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Greens en régulation</div>
+                                            <div class="game-stat-value">28%</div>
+                                            <div class="game-stat-trend neutral">
+                                                <i class="fas fa-equals"></i> stable
+                                            </div>
+                                        </div>
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Putts par tour</div>
+                                            <div class="game-stat-value">32</div>
+                                            <div class="game-stat-trend negative">
+                                                <i class="fas fa-arrow-up"></i> +1.5
+                                            </div>
+                                        </div>
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Score au par</div>
+                                            <div class="game-stat-value">+17</div>
+                                            <div class="game-stat-trend positive">
+                                                <i class="fas fa-arrow-down"></i> -2
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chart-pie card-bg-icon"></i>
+                            </div>
+
+                            <div class="dashboard-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-arrows-to-dot"></i> Forces du jeu</h3>
+                                    <div class="card-action" id="viewDetailedAnalysis">Analyse</div>
+                                </div>
+                                <div class="card-content">
+                                    <div class="strengths-chart-container" id="strengthsChartContainer">
+                                        <!-- Radar chart will be rendered here -->
+                                    </div>
+                                </div>
+                                <i class="fas fa-arrows-to-dot card-bg-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Tab Content -->
+                    <div class="tab-content" id="simulatorContent">
+                        <div class="simulator-section">
+                            <h2 class="simulator-title"><i class="fas fa-calculator"></i> Simulateur d'Index WHS</h2>
+                            <div class="simulator-tabs">
+                                <div class="simulator-tab active" data-simtab="nextRound">Score futur</div>
+                                <div class="simulator-tab" data-simtab="targetIndex">Index cible</div>
+                                <div class="simulator-tab" data-simtab="whatIf">Scénarios multiples</div>
+                            </div>
+
+                            <div class="simulator-tab-content active" id="nextRoundSim">
+                                <div class="form-instructions">
+                                    Simulez l'impact d'un futur score sur votre index. Sélectionnez un parcours et entrez le score que vous pensez réaliser.
+                                </div>
+                                <div class="simulator-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="simCourse">Parcours</label>
+                                            <select id="simCourse">
+                                                <option value="custom">Personnalisé (entrer SSS/Slope)</option>
+                                                <option value="course1">Golf de Saint-Germain - Départs Blancs</option>
+                                                <option value="course2">Golf National - Albatros - Départs Jaunes</option>
+                                                <option value="course3">Fontainebleau - Départs Bleus</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="simSSS">SSS (Course Rating)</label>
+                                            <input type="number" id="simSSS" value="71.5" step="0.1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="simSlope">Slope Rating</label>
+                                            <input type="number" id="simSlope" value="135">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="simScore">Score brut envisagé</label>
+                                            <input type="number" id="simScore" value="88">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="simPar">Par du parcours</label>
+                                            <input type="number" id="simPar" value="72">
+                                        </div>
+                                    </div>
+                                    <div class="button-group">
+                                        <button class="button button-primary" id="calculateSimulation">
+                                            <i class="fas fa-calculator"></i> Calculer
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="simulator-results">
+                                    <div class="result-header">
+                                        <h3 class="result-title">Résultats de la simulation</h3>
+                                        <div class="result-subtitle">Impact d'un score de 88 au Golf National (SSS 71.5, Slope 135)</div>
+                                    </div>
+                                    <div class="result-values">
+                                        <div class="result-item">
+                                            <div class="result-label">Index actuel</div>
+                                            <div class="result-value">15.4</div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-label">Score différentiel</div>
+                                            <div class="result-value">13.8</div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-label">Nouvel index</div>
+                                            <div class="result-value">15.1</div>
+                                            <div class="result-change positive">
+                                                <i class="fas fa-arrow-down"></i> -0.3
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="result-details">
+                                        <p>Ce score rentrerait dans votre historique des 20 dernières cartes et serait l'un de vos 8 meilleurs différentiels. Votre index baisserait de 0.3 points.</p>
+                                        <p>Note: Ce résultat est une simulation basée sur les règles du World Handicap System. L'index officiel peut varier en fonction d'autres facteurs comme le PCC (Playing Conditions Calculation).</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="simulator-tab-content" id="targetIndexSim">
+                                <div class="form-instructions">
+                                    Définissez un objectif d'index et découvrez les scores nécessaires pour l'atteindre dans le temps imparti.
+                                </div>
+                                <div class="simulator-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="targetIndexValue">Index cible</label>
+                                            <input type="number" id="targetIndexValue" value="10.0" step="0.1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="timeframe">Délai souhaité</label>
+                                            <select id="timeframe">
+                                                <option value="3">3 mois</option>
+                                                <option value="6">6 mois</option>
+                                                <option value="12" selected>1 an</option>
+                                                <option value="24">2 ans</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="playingFrequency">Fréquence de jeu</label>
+                                            <select id="playingFrequency">
+                                                <option value="4">4+ parties par mois</option>
+                                                <option value="2" selected>2-3 parties par mois</option>
+                                                <option value="1">1 partie par mois</option>
+                                                <option value="0.5">Moins d'une partie par mois</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="referenceCourseSim">Parcours de référence</label>
+                                            <select id="referenceCourseSim">
+                                                <option value="average" selected>Moyenne de vos parcours habituels</option>
+                                                <option value="course1">Golf de Saint-Germain - Départs Blancs</option>
+                                                <option value="course2">Golf National - Albatros - Départs Jaunes</option>
+                                                <option value="custom">Personnalisé</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="button-group">
+                                        <button class="button button-primary" id="calculateTargetSim">
+                                            <i class="fas fa-calculator"></i> Calculer
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="simulator-results">
+                                    <div class="result-header">
+                                        <h3 class="result-title">Plan pour atteindre un index de 10.0</h3>
+                                        <div class="result-subtitle">Basé sur 2-3 parties par mois pendant 1 an</div>
+                                    </div>
+                                    <div class="result-values">
+                                        <div class="result-item">
+                                            <div class="result-label">Objectif mensuel</div>
+                                            <div class="result-value">-0.45</div>
+                                            <div class="result-label">points/mois</div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-label">Score différentiel cible</div>
+                                            <div class="result-value">11.5</div>
+                                            <div class="result-label">en moyenne</div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-label">Score brut équivalent</div>
+                                            <div class="result-value">86</div>
+                                            <div class="result-label">au parcours de référence</div>
+                                        </div>
+                                    </div>
+                                    <div class="result-details">
+                                        <p>Pour passer de 15.4 à 10.0 en 12 mois, vous devrez baisser votre index d'environ 0.45 points par mois. Cela équivaut à maintenir un score différentiel moyen d'environ 11.5 sur vos meilleures parties.</p>
+                                        <p>Sur votre parcours de référence (SSS 71.5, Slope 135), cela correspond à des scores bruts d'environ 86 en moyenne sur vos meilleures parties.</p>
+                                        <p>Conseil: Concentrez-vous sur l'amélioration régulière plutôt que sur des performances exceptionnelles isolées.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="simulator-tab-content" id="whatIfSim">
+                                <div class="form-instructions">
+                                    Évaluez l'impact de différents scénarios sur votre index. Ajoutez plusieurs scores hypothétiques et observez l'évolution prévue.
+                                </div>
+                                <div class="simulator-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Scenario 1: Prochaines 3 parties</label>
+                                            <select id="whatIfScenario">
+                                                <option value="consistent">Scores constants (~même niveau)</option>
+                                                <option value="improving">Progression régulière</option>
+                                                <option value="exceptional">Une performance exceptionnelle</option>
+                                                <option value="custom">Personnalisé</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="customScoresInputs" style="display: none;">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label>Score 1 (brut)</label>
+                                                <input type="number" id="customScore1" value="88">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Score 2 (brut)</label>
+                                                <input type="number" id="customScore2" value="86">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Score 3 (brut)</label>
+                                                <input type="number" id="customScore3" value="85">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="button-group">
+                                        <button class="button button-primary" id="calculateWhatIf">
+                                            <i class="fas fa-calculator"></i> Calculer
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="simulator-results">
+                                    <div class="result-header">
+                                        <h3 class="result-title">Évolution d'index projetée</h3>
+                                        <div class="result-subtitle">Scénario: Progression régulière sur 3 parties</div>
+                                    </div>
+                                    <div class="result-values">
+                                        <div class="result-item">
+                                            <div class="result-label">Index actuel</div>
+                                            <div class="result-value">15.4</div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-label">Après partie 1</div>
+                                            <div class="result-value">15.2</div>
+                                            <div class="result-change positive">
+                                                <i class="fas fa-arrow-down"></i> -0.2
+                                            </div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-label">Après partie 2</div>
+                                            <div class="result-value">14.9</div>
+                                            <div class="result-change positive">
+                                                <i class="fas fa-arrow-down"></i> -0.3
+                                            </div>
+                                        </div>
+                                        <div class="result-item">
+                                            <div class="result-label">Après partie 3</div>
+                                            <div class="result-value">14.5</div>
+                                            <div class="result-change positive">
+                                                <i class="fas fa-arrow-down"></i> -0.4
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="result-details">
+                                        <p>Dans ce scénario, vous abaisseriez votre index de 0.9 points au total sur les 3 prochaines parties, passant de 15.4 à 14.5.</p>
+                                        <p>Notez que l'effet cumulatif est amplifié car chaque bon score fait sortir un score plus ancien/moins bon de vos 8 meilleurs différentiels.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Score Tab Content -->
+                    <div class="tab-content" id="addScoreContent">
+                        <div class="add-score-section">
+                            <h2 class="simulator-title"><i class="fas fa-plus-circle"></i> Ajouter un nouveau score</h2>
+                            <div class="score-form-tabs">
+                                <div class="score-form-tab active" data-scoretab="quickScore">Score rapide</div>
+                                <div class="score-form-tab" data-scoretab="holeByHole">Trou par trou</div>
+                            </div>
+
+                            <div class="score-form-content active" id="quickScoreForm">
+                                <div class="quick-score-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="scoreDate">Date de la partie</label>
+                                            <input type="date" id="scoreDate" value="">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="scoreCourse">Parcours</label>
+                                            <select id="scoreCourse">
+                                                <option value="custom">Personnalisé (entrer SSS/Slope)</option>
+                                                <option value="course1">Golf de Saint-Germain - Départs Blancs</option>
+                                                <option value="course2">Golf National - Albatros - Départs Jaunes</option>
+                                                <option value="course3">Fontainebleau - Départs Bleus</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="scoreSSS">SSS (Course Rating)</label>
+                                            <input type="number" id="scoreSSS" value="71.5" step="0.1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="scoreSlope">Slope Rating</label>
+                                            <input type="number" id="scoreSlope" value="135">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="scorePar">Par du parcours</label>
+                                            <input type="number" id="scorePar" value="72">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="grossScore">Score brut total</label>
+                                            <input type="number" id="grossScore" value="90">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="scoreType">Type de partie</label>
+                                            <select id="scoreType">
+                                                <option value="competition">Compétition officielle</option>
+                                                <option value="friendly">Partie amicale certifiée</option>
+                                                <option value="practice">Partie d'entraînement</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="putts">Nombre de putts (optionnel)</label>
+                                            <input type="number" id="putts" value="34">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="fairways">Fairways touchés (optionnel)</label>
+                                            <input type="number" id="fairways" value="7" max="14">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="greens">Greens en régulation (optionnel)</label>
+                                            <input type="number" id="greens" value="5" max="18">
+                                        </div>
+                                    </div>
+
+                                    <div class="button-group">
+                                        <button class="button button-outline" id="cancelAddScore">
+                                            <i class="fas fa-times"></i> Annuler
+                                        </button>
+                                        <button class="button button-primary" id="saveQuickScore">
+                                            <i class="fas fa-save"></i> Enregistrer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="score-form-content" id="holeByHoleForm">
+                                <div class="hole-by-hole-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="hbhDate">Date de la partie</label>
+                                            <input type="date" id="hbhDate" value="">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="hbhCourse">Parcours</label>
+                                            <select id="hbhCourse">
+                                                <option value="course1">Golf de Saint-Germain - Départs Blancs</option>
+                                                <option value="course2">Golf National - Albatros - Départs Jaunes</option>
+                                                <option value="course3">Fontainebleau - Départs Bleus</option>
+                                                <option value="custom">Personnalisé</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="hbhType">Type de partie</label>
+                                            <select id="hbhType">
+                                                <option value="competition">Compétition officielle</option>
+                                                <option value="friendly">Partie amicale certifiée</option>
+                                                <option value="practice">Partie d'entraînement</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="holes-grid">
+                                        <!-- First 9 holes -->
+                                        <div class="hole-input">
+                                            <label>Trou 1</label>
+                                            <input type="number" id="hole1" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 2</label>
+                                            <input type="number" id="hole2" min="1" max="15" value="4">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 3</label>
+                                            <input type="number" id="hole3" min="1" max="15" value="6">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 4</label>
+                                            <input type="number" id="hole4" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 5</label>
+                                            <input type="number" id="hole5" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 6</label>
+                                            <input type="number" id="hole6" min="1" max="15" value="4">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 7</label>
+                                            <input type="number" id="hole7" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 8</label>
+                                            <input type="number" id="hole8" min="1" max="15" value="4">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 9</label>
+                                            <input type="number" id="hole9" min="1" max="15" value="6">
+                                        </div>
+
+                                        <!-- Second 9 holes -->
+                                        <div class="hole-input">
+                                            <label>Trou 10</label>
+                                            <input type="number" id="hole10" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 11</label>
+                                            <input type="number" id="hole11" min="1" max="15" value="4">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 12</label>
+                                            <input type="number" id="hole12" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 13</label>
+                                            <input type="number" id="hole13" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 14</label>
+                                            <input type="number" id="hole14" min="1" max="15" value="4">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 15</label>
+                                            <input type="number" id="hole15" min="1" max="15" value="6">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 16</label>
+                                            <input type="number" id="hole16" min="1" max="15" value="5">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 17</label>
+                                            <input type="number" id="hole17" min="1" max="15" value="4">
+                                        </div>
+                                        <div class="hole-input">
+                                            <label>Trou 18</label>
+                                            <input type="number" id="hole18" min="1" max="15" value="5">
+                                        </div>
+                                    </div>
+
+                                    <div class="total-row">
+                                        <div class="total-label">Total brut</div>
+                                        <div class="total-value" id="holeByHoleTotal">87</div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="hbhPutts">Total putts</label>
+                                            <input type="number" id="hbhPutts" value="32">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="hbhFairways">Fairways touchés</label>
+                                            <input type="number" id="hbhFairways" value="8" max="14">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="hbhGreens">Greens en régulation</label>
+                                            <input type="number" id="hbhGreens" value="6" max="18">
+                                        </div>
+                                    </div>
+
+                                    <div class="button-group">
+                                        <button class="button button-outline" id="cancelHoleByHole">
+                                            <i class="fas fa-times"></i> Annuler
+                                        </button>
+                                        <button class="button button-primary" id="saveHoleByHole">
+                                            <i class="fas fa-save"></i> Enregistrer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Score History Tab Content -->
+                    <div class="tab-content" id="scoreHistoryContent">
+                        <div class="scores-history-section">
+                            <h2 class="simulator-title"><i class="fas fa-history"></i> Historique des scores</h2>
+                            
+                            <table class="scores-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Parcours</th>
+                                        <th>Score brut</th>
+                                        <th>Différentiel</th>
+                                        <th>Type</th>
+                                        <th>Utilisé pour index</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scoresTableBody">
+                                    <!-- Will be populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Performance Analysis Tab Content -->
+                    <div class="tab-content" id="performanceContent">
+                        <div class="dashboard-cards">
+                            <div class="dashboard-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-chart-line"></i> Évolution des performances</h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="handicap-chart-container" id="performanceChartContainer">
+                                        <!-- Chart will be rendered here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-cards">
+                            <div class="dashboard-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-bullseye"></i> Analyse détaillée par compartiment</h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="game-stats-grid">
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Index équivalent Driving</div>
+                                            <div class="game-stat-value">18.2</div>
+                                            <div class="game-stat-trend negative">
+                                                <i class="fas fa-arrow-up"></i> +1.5 vs index global
+                                            </div>
+                                        </div>
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Index équivalent Approches</div>
+                                            <div class="game-stat-value">17.3</div>
+                                            <div class="game-stat-trend negative">
+                                                <i class="fas fa-arrow-up"></i> +0.6 vs index global
+                                            </div>
+                                        </div>
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Index équivalent Petit jeu</div>
+                                            <div class="game-stat-value">14.8</div>
+                                            <div class="game-stat-trend positive">
+                                                <i class="fas fa-arrow-down"></i> -1.9 vs index global
+                                            </div>
+                                        </div>
+                                        <div class="game-stat-item">
+                                            <div class="game-stat-label">Index équivalent Putting</div>
+                                            <div class="game-stat-value">16.5</div>
+                                            <div class="game-stat-trend negative">
+                                                <i class="fas fa-arrow-up"></i> -0.2 vs index global
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="scores-history-section">
+                            <h2 class="simulator-title"><i class="fas fa-chart-bar"></i> Statistiques détaillées</h2>
+                            
+                            <div class="score-additional-stats">
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">52%</div>
+                                    <div class="additional-stat-label">Fairways touchés</div>
+                                </div>
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">28%</div>
+                                    <div class="additional-stat-label">Greens en régulation</div>
+                                </div>
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">1.8</div>
+                                    <div class="additional-stat-label">Putts par green touché</div>
+                                </div>
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">32</div>
+                                    <div class="additional-stat-label">Putts par tour</div>
+                                </div>
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">3</div>
+                                    <div class="additional-stat-label">Birdies par 10 tours</div>
+                                </div>
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">2.7</div>
+                                    <div class="additional-stat-label">Double-bogeys par tour</div>
+                                </div>
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">43%</div>
+                                    <div class="additional-stat-label">Up & Down réussis</div>
+                                </div>
+                                <div class="additional-stat">
+                                    <div class="additional-stat-value">27%</div>
+                                    <div class="additional-stat-label">Bunkers sauvés</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab Content -->
+                    <div class="tab-content" id="settingsContent">
+                        <div class="simulator-section">
+                            <h2 class="simulator-title"><i class="fas fa-cog"></i> Paramètres</h2>
+                            
+                            <div class="simulator-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="settingsName">Votre nom</label>
+                                        <input type="text" id="settingsName" value="Jean Dupont">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="settingsClub">Votre club</label>
+                                        <input type="text" id="settingsClub" value="Golf de Saint-Germain">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="settingsHandicap">Index officiel actuel</label>
+                                        <input type="number" id="settingsHandicap" value="15.4" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="settingsTarget">Objectif d'index</label>
+                                        <input type="number" id="settingsTarget" value="10.0" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="settingsTheme">Thème</label>
+                                        <select id="settingsTheme">
+                                            <option value="dark" selected>Sombre (par défaut)</option>
+                                            <option value="light">Clair</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="settingsUnits">Unités de distance</label>
+                                        <select id="settingsUnits">
+                                            <option value="meters" selected>Mètres</option>
+                                            <option value="yards">Yards</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="button-group">
+                                    <button class="button button-primary" id="saveSettings">
+                                        <i class="fas fa-save"></i> Enregistrer les paramètres
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            GolfIndex Pro © 2025 - Simulateur avancé de handicap WHS | Tous les calculs sont conformes aux règles du World Handicap System
+        </div>
+
+        <div class="notification" id="notification">
+            <i class="fas fa-check-circle"></i>
+            <span id="notificationText">Score enregistré avec succès</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Storage simulation for sandbox environments
+            const storageSimulation = {
+                data: {},
+                setItem: function(key, value) {
+                    this.data[key] = value;
+                    return true;
+                },
+                getItem: function(key) {
+                    return this.data[key] || null;
+                }
+            };
+
+            // Choose storage method based on availability
+            const storage = (function() {
+                try {
+                    localStorage.setItem('test', 'test');
+                    localStorage.removeItem('test');
+                    return localStorage;
+                } catch (e) {
+                    console.log('localStorage not available, using in-memory storage instead');
+                    return storageSimulation;
+                }
+            })();
+
+            // User data storage
+            let userData = {
+                name: "Jean Dupont",
+                club: "Golf de Saint-Germain",
+                currentHandicap: 15.4,
+                targetHandicap: 10.0,
+                playFrequency: "weekly",
+                scores: [], // Will hold score history
+                settings: {
+                    theme: "dark",
+                    units: "meters"
+                },
+                initialized: false
+            };
+
+            // Sample scores for demonstration
+            const sampleScores = [
+                {
+                    date: '2025-03-15',
+                    course: 'Golf National - Albatros',
+                    grossScore: 90,
+                    par: 72,
+                    sss: 71.5,
+                    slope: 135,
+                    differential: 15.8,
+                    type: 'competition',
+                    usedForIndex: true,
+                    stats: {
+                        putts: 32,
+                        fairways: 8,
+                        greens: 6
+                    }
+                },
+                {
+                    date: '2025-03-08',
+                    course: 'Fontainebleau',
+                    grossScore: 88,
+                    par: 72,
+                    sss: 70.8,
+                    slope: 132,
+                    differential: 14.9,
+                    type: 'competition',
+                    usedForIndex: true,
+                    stats: {
+                        putts: 30,
+                        fairways: 9,
+                        greens: 7
+                    }
+                },
+                {
+                    date: '2025-03-01',
+                    course: 'Golf de Saint-Germain',
+                    grossScore: 86,
+                    par: 71,
+                    sss: 70.2,
+                    slope: 129,
+                    differential: 14.1,
+                    type: 'friendly',
+                    usedForIndex: true,
+                    stats: {
+                        putts: 31,
+                        fairways: 7,
+                        greens: 8
+                    }
+                },
+                {
+                    date: '2025-02-22',
+                    course: 'Golf National - Albatros',
+                    grossScore: 92,
+                    par: 72,
+                    sss: 71.5,
+                    slope: 135,
+                    differential: 17.6,
+                    type: 'friendly',
+                    usedForIndex: false,
+                    stats: {
+                        putts: 33,
+                        fairways: 6,
+                        greens: 5
+                    }
+                },
+                {
+                    date: '2025-02-15',
+                    course: 'Fontainebleau',
+                    grossScore: 89,
+                    par: 72,
+                    sss: 70.8,
+                    slope: 132,
+                    differential: 15.8,
+                    type: 'competition',
+                    usedForIndex: true,
+                    stats: {
+                        putts: 32,
+                        fairways: 8,
+                        greens: 6
+                    }
+                }
+            ];
+
+            // Try to load user data from storage
+            const savedData = storage.getItem('golfindexUserData');
+            if (savedData) {
+                userData = JSON.parse(savedData);
+                if (userData.scores.length === 0) {
+                    userData.scores = sampleScores; // Add sample scores for demonstration
+                }
+                
+                // If previously initialized, show the main app
+                if (userData.initialized) {
+                    document.getElementById('welcomeScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    updateProfileDisplay();
+                    initializeCharts();
+                    populateRecentScores();
+                    populateScoresTable();
+                }
+            } else {
+                // First time user, set today's date for score inputs
+                setTodayDateInputs();
+            }
+
+            // Set today's date for date inputs
+            function setTodayDateInputs() {
+                const today = new Date().toISOString().split('T')[0];
+                const dateInputs = document.querySelectorAll('input[type="date"]');
+                dateInputs.forEach(input => {
+                    input.value = today;
+                });
+            }
+
+            // Onboarding navigation
+            document.getElementById('nextStep1').addEventListener('click', function() {
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+                
+                // Save name and club
+                userData.name = document.getElementById('playerName').value || "Jean Dupont";
+                userData.club = document.getElementById('playerClub').value || "Golf de Saint-Germain";
+            });
+
+            document.getElementById('prevStep2').addEventListener('click', function() {
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step1').classList.add('active');
+            });
+
+            document.getElementById('nextStep2').addEventListener('click', function() {
+                document.getElementById('step2').classList.remove('active');
+                document.getElementById('step3').classList.add('active');
+                
+                // Save handicap
+                userData.currentHandicap = parseFloat(document.getElementById('currentHandicap').value) || 15.4;
+                userData.hasOfficialHandicap = document.getElementById('hasOfficialHandicap').value === 'yes';
+            });
+
+            document.getElementById('prevStep3').addEventListener('click', function() {
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+            });
+
+            document.getElementById('completeSetup').addEventListener('click', function() {
+                // Save target handicap and play frequency
+                userData.targetHandicap = parseFloat(document.getElementById('targetHandicap').value) || 10.0;
+                userData.playFrequency = document.getElementById('playFrequency').value;
+                
+                // Mark as initialized
+                userData.initialized = true;
+                
+                // Add sample scores for demonstration
+                if (userData.scores.length === 0) {
+                    userData.scores = sampleScores;
+                }
+
+                // Save user data
+                storage.setItem('golfindexUserData', JSON.stringify(userData));
+                
+                // Hide welcome screen and show main app
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                
+                // Update profile display
+                updateProfileDisplay();
+                
+                // Initialize charts
+                initializeCharts();
+                
+                // Populate recent scores
+                populateRecentScores();
+                
+                // Populate scores table
+                populateScoresTable();
+                
+                // Show notification
+                showNotification("Profil configuré avec succès");
+            });
+
+            // Update profile display
+            function updateProfileDisplay() {
+                // Set profile details
+                document.getElementById('profileName').textContent = userData.name;
+                document.getElementById('profileClub').textContent = userData.club;
+                document.getElementById('handicapValue').textContent = userData.currentHandicap.toFixed(1);
+                
+                // Set profile initials
+                const initials = userData.name.split(' ').map(n => n[0]).join('');
+                document.getElementById('profileInitials').textContent = initials;
+                
+                // Set settings form values
+                document.getElementById('settingsName').value = userData.name;
+                document.getElementById('settingsClub').value = userData.club;
+                document.getElementById('settingsHandicap').value = userData.currentHandicap;
+                document.getElementById('settingsTarget').value = userData.targetHandicap;
+                document.getElementById('settingsTheme').value = userData.settings.theme;
+                document.getElementById('settingsUnits').value = userData.settings.units;
+            }
+
+            // Tab switching
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update tab classes
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabContents = document.querySelectorAll('.tab-content');
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(this.dataset.tab + 'Content').classList.add('active');
+                });
+            });
+
+            // Simulator tabs
+            const simTabs = document.querySelectorAll('.simulator-tab');
+            simTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update simulator tab classes
+                    simTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding simulator content
+                    const simContents = document.querySelectorAll('.simulator-tab-content');
+                    simContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(this.dataset.simtab + 'Sim').classList.add('active');
+                });
+            });
+
+                                // Score form tabs
+            const scoreFormTabs = document.querySelectorAll('.score-form-tab');
+            scoreFormTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update score form tab classes
+                    scoreFormTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding score form content
+                    const scoreFormContents = document.querySelectorAll('.score-form-content');
+                    scoreFormContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(this.dataset.scoretab + 'Form').classList.add('active');
+                });
+            });
+
+            // Initialize charts
+            function initializeCharts() {
+                // Handicap history chart
+                const handicapChartCtx = document.getElementById('handicapChartContainer').getContext('2d');
+                
+                // Sort scores by date
+                const sortedScores = [...userData.scores].sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                // Extract dates and differentials
+                const dates = sortedScores.map(score => {
+                    const date = new Date(score.date);
+                    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+                });
+                
+                const differentials = sortedScores.map(score => score.differential);
+                
+                // Calculate handicap values over time
+                const handicapValues = [];
+                let currentHandicap = userData.currentHandicap;
+                
+                // Add current handicap as last value
+                handicapValues.push(currentHandicap);
+                
+                // Generate projected values (simple linear trend for demo)
+                const projectedDates = [];
+                const projectedHandicap = [];
+                
+                // Add last real date and handicap
+                if (dates.length > 0) {
+                    projectedDates.push(dates[dates.length - 1]);
+                    projectedHandicap.push(handicapValues[0]);
+                } else {
+                    const today = new Date();
+                    projectedDates.push(today.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
+                    projectedHandicap.push(currentHandicap);
+                }
+                
+                // Add 6 projected dates (every 2 weeks)
+                const lastDate = dates.length > 0 ? new Date(sortedScores[sortedScores.length - 1].date) : new Date();
+                
+                for (let i = 1; i <= 6; i++) {
+                    const futureDate = new Date(lastDate);
+                    futureDate.setDate(futureDate.getDate() + (i * 14)); // Every 2 weeks
+                    
+                    projectedDates.push(futureDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
+                    
+                    // Simple projection assuming 0.3 index drop every 2 weeks toward target
+                    const projectedValue = Math.max(userData.targetHandicap, currentHandicap - (i * 0.3));
+                    projectedHandicap.push(projectedValue);
+                }
+                
+                // Create handicap chart
+                window.handicapChart = new Chart(handicapChartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [...dates, ...projectedDates.slice(1)], // Remove duplicate date
+                        datasets: [
+                            {
+                                label: 'Index',
+                                data: handicapValues,
+                                borderColor: '#27ae60',
+                                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#27ae60'
+                            },
+                            {
+                                label: 'Projection',
+                                data: [null, ...projectedHandicap.slice(1)], // Start after last real value
+                                borderColor: '#3498db',
+                                borderDash: [5, 5],
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#3498db'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                reverse: true, // Lower handicap is better, so display inverted
+                                suggestedMin: Math.min(userData.targetHandicap - 1, currentHandicap - 2),
+                                suggestedMax: currentHandicap + 2,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#bdc3c7'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#bdc3c7'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#ecf0f1'
+                                }
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        }
+                    }
+                });
+                
+                // Strengths radar chart
+                const strengthsChartCtx = document.getElementById('strengthsChartContainer').getContext('2d');
+                
+                window.strengthsChart = new Chart(strengthsChartCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Driving', 'Approches', 'Petit jeu', 'Putting', 'Stratégie'],
+                        datasets: [{
+                            label: 'Vos performances',
+                            data: [52, 45, 68, 58, 62],
+                            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                            borderColor: '#27ae60',
+                            pointBackgroundColor: '#27ae60',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#27ae60'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                pointLabels: {
+                                    color: '#ecf0f1'
+                                },
+                                ticks: {
+                                    backdropColor: 'transparent',
+                                    color: '#bdc3c7'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                
+                // Performance chart
+                if (document.getElementById('performanceChartContainer')) {
+                    const performanceChartCtx = document.getElementById('performanceChartContainer').getContext('2d');
+                    
+                    window.performanceChart = new Chart(performanceChartCtx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [
+                                {
+                                    label: 'Score brut',
+                                    data: sortedScores.map(score => score.grossScore),
+                                    borderColor: '#e74c3c',
+                                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                    tension: 0.4,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'Score différentiel',
+                                    data: differentials,
+                                    borderColor: '#3498db',
+                                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                    tension: 0.4,
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: {
+                                        display: true,
+                                        text: 'Score brut',
+                                        color: '#e74c3c'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    },
+                                    ticks: {
+                                        color: '#bdc3c7'
+                                    }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: {
+                                        display: true,
+                                        text: 'Score différentiel',
+                                        color: '#3498db'
+                                    },
+                                    grid: {
+                                        drawOnChartArea: false
+                                    },
+                                    ticks: {
+                                        color: '#bdc3c7'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    },
+                                    ticks: {
+                                        color: '#bdc3c7'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#ecf0f1'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Populate recent scores list
+            function populateRecentScores() {
+                const recentScoresList = document.getElementById('recentScoresList');
+                if (!recentScoresList) return;
+                
+                recentScoresList.innerHTML = '';
+                
+                // Sort scores by date (newest first)
+                const sortedScores = [...userData.scores].sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Take the 5 most recent scores
+                const recentScores = sortedScores.slice(0, 5);
+                
+                if (recentScores.length === 0) {
+                    recentScoresList.innerHTML = '<p class="text-center" style="color: var(--gray); padding: 20px;">Aucun score enregistré. Ajoutez votre première partie.</p>';
+                    return;
+                }
+                
+                recentScores.forEach(score => {
+                    const scoreItem = document.createElement('div');
+                    scoreItem.className = 'score-item';
+                    
+                    // Format date
+                    const scoreDate = new Date(score.date);
+                    const formattedDate = scoreDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+                    
+                    // Set differential class
+                    let differentialClass = 'average';
+                    if (score.differential < userData.currentHandicap - 1) {
+                        differentialClass = 'good';
+                    } else if (score.differential > userData.currentHandicap + 1) {
+                        differentialClass = 'bad';
+                    }
+                    
+                    scoreItem.innerHTML = `
+                        <div class="score-date">${formattedDate}</div>
+                        <div class="score-course">${score.course}</div>
+                        <div class="score-value">
+                            <div class="score-gross">${score.grossScore}</div>
+                            <div class="score-differential ${differentialClass}">${score.differential.toFixed(1)}</div>
+                        </div>
+                    `;
+                    
+                    recentScoresList.appendChild(scoreItem);
+                });
+            }
+
+            // Populate scores table
+            function populateScoresTable() {
+                const scoresTableBody = document.getElementById('scoresTableBody');
+                if (!scoresTableBody) return;
+                
+                scoresTableBody.innerHTML = '';
+                
+                // Sort scores by date (newest first)
+                const sortedScores = [...userData.scores].sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                if (sortedScores.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `<td colspan="7" class="text-center">Aucun score enregistré. Ajoutez votre première partie.</td>`;
+                    scoresTableBody.appendChild(emptyRow);
+                    return;
+                }
+                
+                sortedScores.forEach((score, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Format date
+                    const scoreDate = new Date(score.date);
+                    const formattedDate = scoreDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    
+                    // Format score type
+                    let typeText = 'Compétition';
+                    let typeBadge = 'primary';
+                    
+                    if (score.type === 'friendly') {
+                        typeText = 'Amicale';
+                        typeBadge = 'secondary';
+                    } else if (score.type === 'practice') {
+                        typeText = 'Entraînement';
+                        typeBadge = 'warning';
+                    }
+                    
+                    // Format used for index
+                    const usedText = score.usedForIndex ? 'Oui' : 'Non';
+                    const usedBadge = score.usedForIndex ? 'primary' : 'danger';
+                    
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${score.course}</td>
+                        <td class="text-center strong">${score.grossScore}</td>
+                        <td class="text-center strong">${score.differential.toFixed(1)}</td>
+                        <td><span class="badge ${typeBadge}">${typeText}</span></td>
+                        <td><span class="badge ${usedBadge}">${usedText}</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <i class="fas fa-eye action-icon view-score" data-index="${index}"></i>
+                                <i class="fas fa-edit action-icon edit-score" data-index="${index}"></i>
+                                <i class="fas fa-trash action-icon delete delete-score" data-index="${index}"></i>
+                            </div>
+                        </td>
+                    `;
+                    
+                    scoresTableBody.appendChild(row);
+                });
+                
+                // Add event listeners for action buttons
+                document.querySelectorAll('.view-score').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = this.dataset.index;
+                        // TODO: View score details
+                        showNotification("Affichage des détails du score (fonctionnalité à venir)");
+                    });
+                });
+                
+                document.querySelectorAll('.edit-score').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = this.dataset.index;
+                        // TODO: Edit score
+                        showNotification("Modification du score (fonctionnalité à venir)");
+                    });
+                });
+                
+                document.querySelectorAll('.delete-score').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = this.dataset.index;
+                        if (confirm("Êtes-vous sûr de vouloir supprimer ce score? Cette action est irréversible.")) {
+                            // Remove score
+                            userData.scores.splice(index, 1);
+                            
+                            // Save user data
+                            storage.setItem('golfindexUserData', JSON.stringify(userData));
+                            
+                            // Update UI
+                            populateScoresTable();
+                            populateRecentScores();
+                            recalculateHandicap();
+                            initializeCharts();
+                            
+                            // Show notification
+                            showNotification("Score supprimé avec succès");
+                        }
+                    });
+                });
+            }
+
+            // Calculate score differential
+            function calculateScoreDifferential(grossScore, sss, slope) {
+                return ((113 / slope) * (grossScore - sss));
+            }
+
+            // Recalculate handicap (WHS method)
+            function recalculateHandicap() {
+                if (userData.scores.length === 0) return;
+                
+                // Sort scores by date
+                const sortedScores = [...userData.scores].sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                // Take the 20 most recent scores
+                const recentScores = sortedScores.slice(-20);
+                
+                // Map to differentials
+                const differentials = recentScores.map(score => score.differential);
+                
+                // Sort differentials (lowest to highest)
+                const sortedDifferentials = [...differentials].sort((a, b) => a - b);
+                
+                // Determine how many scores to use based on WHS rules
+                let numScores = 0;
+                let divisor = 1;
+                
+                if (recentScores.length <= 3) {
+                    numScores = 1;
+                    divisor = 1;
+                } else if (recentScores.length <= 6) {
+                    numScores = 2;
+                    divisor = 2;
+                } else if (recentScores.length <= 8) {
+                    numScores = 2;
+                    divisor = 2;
+                } else if (recentScores.length <= 11) {
+                    numScores = 3;
+                    divisor = 3;
+                } else if (recentScores.length <= 14) {
+                    numScores = 4;
+                    divisor = 4;
+                } else if (recentScores.length <= 16) {
+                    numScores = 5;
+                    divisor = 5;
+                } else if (recentScores.length <= 18) {
+                    numScores = 6;
+                    divisor = 6;
+                } else if (recentScores.length === 19) {
+                    numScores = 7;
+                    divisor = 7;
+                } else {
+                    numScores = 8;
+                    divisor = 8;
+                }
+                
+                // Take the best differentials
+                const bestDifferentials = sortedDifferentials.slice(0, numScores);
+                
+                // Calculate the average
+                const sum = bestDifferentials.reduce((a, b) => a + b, 0);
+                const average = sum / divisor;
+                
+                // Update user handicap
+                const oldHandicap = userData.currentHandicap;
+                userData.currentHandicap = parseFloat(average.toFixed(1));
+                
+                // Save user data
+                storage.setItem('golfindexUserData', JSON.stringify(userData));
+                
+                // Update handicap display
+                document.getElementById('handicapValue').textContent = userData.currentHandicap.toFixed(1);
+                
+                // Update handicap trend
+                const handicapTrend = document.getElementById('handicapTrend');
+                const difference = (userData.currentHandicap - oldHandicap).toFixed(1);
+                
+                if (difference < 0) {
+                    handicapTrend.className = 'handicap-trend down';
+                    handicapTrend.innerHTML = `<i class="fas fa-arrow-down"></i> ${difference} sur 30 jours`;
+                } else if (difference > 0) {
+                    handicapTrend.className = 'handicap-trend up';
+                    handicapTrend.innerHTML = `<i class="fas fa-arrow-up"></i> +${difference} sur 30 jours`;
+                } else {
+                    handicapTrend.className = 'handicap-trend stable';
+                    handicapTrend.innerHTML = `<i class="fas fa-equals"></i> Stable sur 30 jours`;
+                }
+            }
+
+            // Calculate hole-by-hole total
+            function updateHoleByHoleTotal() {
+                let total = 0;
+                
+                for (let i = 1; i <= 18; i++) {
+                    const holeInput = document.getElementById(`hole${i}`);
+                    if (holeInput) {
+                        const score = parseInt(holeInput.value) || 0;
+                        total += score;
+                    }
+                }
+                
+                document.getElementById('holeByHoleTotal').textContent = total;
+            }
+
+            // Add event listeners to hole inputs for real-time total calculation
+            const holeInputs = document.querySelectorAll('.hole-input input');
+            holeInputs.forEach(input => {
+                input.addEventListener('input', updateHoleByHoleTotal);
+            });
+
+            // Initialize hole-by-hole total
+            updateHoleByHoleTotal();
+
+            // Handle course selection change
+            document.getElementById('scoreCourse').addEventListener('change', function() {
+                const customFields = document.querySelectorAll('#scoreSSS, #scoreSlope, #scorePar');
+                
+                if (this.value === 'custom') {
+                    // Enable custom fields
+                    customFields.forEach(field => field.disabled = false);
+                } else {
+                    // Set values based on selected course
+                    let sss, slope, par;
+                    
+                    switch (this.value) {
+                        case 'course1': // Golf de Saint-Germain
+                            sss = 71.2;
+                            slope = 129;
+                            par = 71;
+                            break;
+                        case 'course2': // Golf National - Albatros
+                            sss = 71.5;
+                            slope = 135;
+                            par = 72;
+                            break;
+                        case 'course3': // Fontainebleau
+                            sss = 70.8;
+                            slope = 132;
+                            par = 72;
+                            break;
+                    }
+                    
+                    document.getElementById('scoreSSS').value = sss;
+                    document.getElementById('scoreSlope').value = slope;
+                    document.getElementById('scorePar').value = par;
+                }
+            });
+
+            // Similar handler for simulator course selection
+            document.getElementById('simCourse').addEventListener('change', function() {
+                const customFields = document.querySelectorAll('#simSSS, #simSlope, #simPar');
+                
+                if (this.value === 'custom') {
+                    // Enable custom fields
+                    customFields.forEach(field => field.disabled = false);
+                } else {
+                    // Set values based on selected course
+                    let sss, slope, par;
+                    
+                    switch (this.value) {
+                        case 'course1': // Golf de Saint-Germain
+                            sss = 71.2;
+                            slope = 129;
+                            par = 71;
+                            break;
+                        case 'course2': // Golf National - Albatros
+                            sss = 71.5;
+                            slope = 135;
+                            par = 72;
+                            break;
+                        case 'course3': // Fontainebleau
+                            sss = 70.8;
+                            slope = 132;
+                            par = 72;
+                            break;
+                    }
+                    
+                    document.getElementById('simSSS').value = sss;
+                    document.getElementById('simSlope').value = slope;
+                    document.getElementById('simPar').value = par;
+                }
+            });
+
+            // Handle what-if scenario selection
+            document.getElementById('whatIfScenario').addEventListener('change', function() {
+                const customScoresInputs = document.getElementById('customScoresInputs');
+                
+                if (this.value === 'custom') {
+                    customScoresInputs.style.display = 'block';
+                } else {
+                    customScoresInputs.style.display = 'none';
+                }
+            });
+
+            // Button event listeners
+
+            // Quick button to add score
+            document.getElementById('addScoreQuick').addEventListener('click', function() {
+                // Switch to add score tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab[data-tab="addScore"]').classList.add('active');
+                
+                // Show corresponding content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('addScoreContent').classList.add('active');
+                
+                // Set focus on first field
+                document.getElementById('scoreDate').focus();
+            });
+
+            // Simulate button event
+            document.getElementById('calculateSimulation').addEventListener('click', function() {
+                // Get form values
+                const simScore = parseInt(document.getElementById('simScore').value);
+                const simSSS = parseFloat(document.getElementById('simSSS').value);
+                const simSlope = parseInt(document.getElementById('simSlope').value);
+                
+                // Calculate score differential
+                const scoreDifferential = calculateScoreDifferential(simScore, simSSS, simSlope);
+                
+                // Get course name
+                let courseName = "parcours personnalisé";
+                const simCourse = document.getElementById('simCourse').value;
+                
+                if (simCourse === 'course1') {
+                    courseName = "Golf de Saint-Germain";
+                } else if (simCourse === 'course2') {
+                    courseName = "Golf National - Albatros";
+                } else if (simCourse === 'course3') {
+                    courseName = "Fontainebleau";
+                }
+                
+                // Create a copy of user scores to simulate
+                const simulatedScores = [...userData.scores];
+                
+                // Add the simulated score
+                simulatedScores.push({
+                    date: new Date().toISOString().split('T')[0],
+                    course: courseName,
+                    grossScore: simScore,
+                    par: parseInt(document.getElementById('simPar').value),
+                    sss: simSSS,
+                    slope: simSlope,
+                    differential: scoreDifferential,
+                    type: 'simulation',
+                    usedForIndex: false
+                });
+                
+                // Sort scores by date
+                const sortedScores = [...simulatedScores].sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                // Take the 20 most recent scores
+                const recentScores = sortedScores.slice(-20);
+                
+                // Map to differentials
+                const differentials = recentScores.map(score => score.differential);
+                
+                // Sort differentials (lowest to highest)
+                const sortedDifferentials = [...differentials].sort((a, b) => a - b);
+                
+                // Determine how many scores to use based on WHS rules
+                let numScores = 0;
+                let divisor = 1;
+                
+                if (recentScores.length <= 3) {
+                    numScores = 1;
+                    divisor = 1;
+                } else if (recentScores.length <= 6) {
+                    numScores = 2;
+                    divisor = 2;
+                } else if (recentScores.length <= 8) {
+                    numScores = 2;
+                    divisor = 2;
+                } else if (recentScores.length <= 11) {
+                    numScores = 3;
+                    divisor = 3;
+                } else if (recentScores.length <= 14) {
+                    numScores = 4;
+                    divisor = 4;
+                } else if (recentScores.length <= 16) {
+                    numScores = 5;
+                    divisor = 5;
+                } else if (recentScores.length <= 18) {
+                    numScores = 6;
+                    divisor = 6;
+                } else if (recentScores.length === 19) {
+                    numScores = 7;
+                    divisor = 7;
+                } else {
+                    numScores = 8;
+                    divisor = 8;
+                }
+                
+                // Take the best differentials
+                const bestDifferentials = sortedDifferentials.slice(0, numScores);
+                
+                // Calculate the average
+                const sum = bestDifferentials.reduce((a, b) => a + b, 0);
+                const average = sum / divisor;
+                
+                // Get the simulated handicap
+                const simulatedHandicap = parseFloat(average.toFixed(1));
+                
+                // Check if the new differential would be in the best 8
+                const wouldBeUsed = bestDifferentials.includes(scoreDifferential);
+                
+                // Update result display
+                document.querySelector('.result-subtitle').textContent = `Impact d'un score de ${simScore} au ${courseName} (SSS ${simSSS}, Slope ${simSlope})`;
+                document.querySelector('.result-item:nth-child(1) .result-value').textContent = userData.currentHandicap.toFixed(1);
+                document.querySelector('.result-item:nth-child(2) .result-value').textContent = scoreDifferential.toFixed(1);
+                document.querySelector('.result-item:nth-child(3) .result-value').textContent = simulatedHandicap.toFixed(1);
+                
+                // Update the change display
+                const change = document.querySelector('.result-change');
+                const difference = (simulatedHandicap - userData.currentHandicap).toFixed(1);
+                
+                if (difference < 0) {
+                    change.className = 'result-change positive';
+                    change.innerHTML = `<i class="fas fa-arrow-down"></i> ${difference}`;
+                } else if (difference > 0) {
+                    change.className = 'result-change negative';
+                    change.innerHTML = `<i class="fas fa-arrow-up"></i> +${difference}`;
+                } else {
+                    change.className = 'result-change neutral';
+                    change.innerHTML = `<i class="fas fa-equals"></i> 0.0`;
+                }
+                
+                // Update the details text
+                const detailsElement = document.querySelector('.result-details');
+                let detailsText = '';
+                
+                if (wouldBeUsed) {
+                    detailsText = `Ce score rentrerait dans votre historique des 20 dernières cartes et serait l'un de vos ${numScores} meilleurs différentiels. `;
+                    
+                    if (difference < 0) {
+                        detailsText += `Votre index baisserait de ${Math.abs(difference)} points.`;
+                    } else if (difference > 0) {
+                        detailsText += `Votre index augmenterait de ${difference} points.`;
+                    } else {
+                        detailsText += `Votre index resterait stable.`;
+                    }
+                } else {
+                    detailsText = `Ce score rentrerait dans votre historique des 20 dernières cartes mais ne ferait pas partie de vos ${numScores} meilleurs différentiels. Votre index resterait donc inchangé.`;
+                }
+                
+                detailsText += `<p>Note: Ce résultat est une simulation basée sur les règles du World Handicap System. L'index officiel peut varier en fonction d'autres facteurs comme le PCC (Playing Conditions Calculation).</p>`;
+                
+                detailsElement.innerHTML = detailsText;
+                
+                // Show notification
+                showNotification("Simulation calculée avec succès");
+            });
+
+            // Target index simulation button
+            document.getElementById('calculateTargetSim').addEventListener('click', function() {
+                // Get form values
+                const targetIndex = parseFloat(document.getElementById('targetIndexValue').value);
+                const timeframe = parseInt(document.getElementById('timeframe').value); // months
+                const playingFrequency = parseFloat(document.getElementById('playingFrequency').value); // parties per month
+                
+                // Calculate required monthly improvement
+                const currentIndex = userData.currentHandicap;
+                const totalImprovement = currentIndex - targetIndex;
+                const monthlyImprovement = totalImprovement / timeframe;
+                
+                // Get reference course data
+                let sss = 71.5;
+                let slope = 135;
+                let par = 72;
+                
+                // Calculate target differential
+                // A rough estimate for demonstration - in reality this would be more complex
+                const targetDifferential = targetIndex * 0.9; // Simplified calculation
+                
+                // Calculate equivalent gross score on reference course
+                const targetGrossScore = targetDifferential * (slope / 113) + sss;
+                
+                // Update result display
+                document.querySelector('.simulator-results .result-title').textContent = `Plan pour atteindre un index de ${targetIndex.toFixed(1)}`;
+                document.querySelector('.simulator-results .result-subtitle').textContent = `Basé sur ${playingFrequency} parties par mois pendant ${timeframe} mois`;
+                
+                document.querySelector('.simulator-results .result-item:nth-child(1) .result-value').textContent = monthlyImprovement.toFixed(2);
+                document.querySelector('.simulator-results .result-item:nth-child(2) .result-value').textContent = targetDifferential.toFixed(1);
+                document.querySelector('.simulator-results .result-item:nth-child(3) .result-value').textContent = Math.round(targetGrossScore);
+                
+                // Update details text
+                const detailsElement = document.querySelector('#targetIndexSim .result-details');
+                
+                detailsElement.innerHTML = `
+                    <p>Pour passer de ${currentIndex.toFixed(1)} à ${targetIndex.toFixed(1)} en ${timeframe} mois, vous devrez baisser votre index d'environ ${monthlyImprovement.toFixed(2)} points par mois. Cela équivaut à maintenir un score différentiel moyen d'environ ${targetDifferential.toFixed(1)} sur vos meilleures parties.</p>
+                    <p>Sur votre parcours de référence (SSS ${sss}, Slope ${slope}), cela correspond à des scores bruts d'environ ${Math.round(targetGrossScore)} en moyenne sur vos meilleures parties.</p>
+                    <p>Conseil: Concentrez-vous sur l'amélioration régulière plutôt que sur des performances exceptionnelles isolées.</p>
+                `;
+                
+                // Show notification
+                showNotification("Plan d'amélioration calculé avec succès");
+            });
+
+            // What-if simulation button
+            document.getElementById('calculateWhatIf').addEventListener('click', function() {
+                // Get selected scenario
+                const scenario = document.getElementById('whatIfScenario').value;
+                
+                // Define scores based on scenario
+                let scores = [];
+                
+                // Reference values for simulation
+                const sss = 71.5;
+                const slope = 135;
+                const par = 72;
+                
+                switch (scenario) {
+                    case 'consistent':
+                        // Consistent scores around current handicap
+                        scores = [
+                            Math.round(userData.currentHandicap * (slope / 113) + sss),
+                            Math.round(userData.currentHandicap * (slope / 113) + sss - 1),
+                            Math.round(userData.currentHandicap * (slope / 113) + sss + 1)
+                        ];
+                        break;
+                        
+                    case 'improving':
+                        // Gradually improving scores
+                        const baseScore = Math.round(userData.currentHandicap * (slope / 113) + sss);
+                        scores = [
+                            baseScore,
+                            baseScore - 2,
+                            baseScore - 4
+                        ];
+                        break;
+                        
+                    case 'exceptional':
+                        // One exceptional score among average scores
+                        const avgScore = Math.round(userData.currentHandicap * (slope / 113) + sss);
+                        scores = [
+                            avgScore,
+                            avgScore + 1,
+                            avgScore - 7 // Exceptional round
+                        ];
+                        break;
+                        
+                    case 'custom':
+                        // Custom scores from inputs
+                        scores = [
+                            parseInt(document.getElementById('customScore1').value),
+                            parseInt(document.getElementById('customScore2').value),
+                            parseInt(document.getElementById('customScore3').value)
+                        ];
+                        break;
+                }
+                
+                // Calculate differentials
+                const differentials = scores.map(score => calculateScoreDifferential(score, sss, slope));
+                
+                // Clone user data for simulation
+                let simulatedHandicap = userData.currentHandicap;
+                const simulatedData = { ...userData, scores: [...userData.scores] };
+                
+                // Array to store progression
+                let handicapProgression = [simulatedHandicap];
+                
+                // Add scores one by one and recalculate handicap
+                for (let i = 0; i < scores.length; i++) {
+                    // Add a new simulated score
+                    let date = new Date();
+                    date.setDate(date.getDate() + (i * 7)); // Weekly scores
+                    
+                    simulatedData.scores.push({
+                        date: date.toISOString().split('T')[0],
+                        course: 'Simulation',
+                        grossScore: scores[i],
+                        differential: differentials[i],
+                        sss,
+                        slope,
+                        par,
+                        type: 'simulation',
+                        usedForIndex: false
+                    });
+                    
+                    // Recalculate handicap
+                    const sortedScores = [...simulatedData.scores].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    const recentScores = sortedScores.slice(-20);
+                    const allDifferentials = recentScores.map(score => score.differential);
+                    
+                    // Sort differentials (lowest to highest)
+                    const sortedDifferentials = [...allDifferentials].sort((a, b) => a - b);
+                    
+                    // Determine how many scores to use
+                    let numScores = 8;
+                    if (recentScores.length < 20) {
+                        // Simplified WHS rule for demo
+                        numScores = Math.floor(recentScores.length / 3) + 1;
+                    }
+                    
+                    // Take the best differentials
+                    const bestDifferentials = sortedDifferentials.slice(0, numScores);
+                    
+                    // Calculate average
+                    const sum = bestDifferentials.reduce((a, b) => a + b, 0);
+                    const average = sum / numScores;
+                    
+                    // Update simulated handicap
+                    simulatedHandicap = parseFloat(average.toFixed(1));
+                    handicapProgression.push(simulatedHandicap);
+                }
+                
+                // Update scenario subtitle
+                let scenarioName = '';
+                switch (scenario) {
+                    case 'consistent':
+                        scenarioName = 'Scores constants (~même niveau)';
+                        break;
+                    case 'improving':
+                        scenarioName = 'Progression régulière';
+                        break;
+                    case 'exceptional':
+                        scenarioName = 'Une performance exceptionnelle';
+                        break;
+                    case 'custom':
+                        scenarioName = 'Scores personnalisés';
+                        break;
+                }
+                
+                document.querySelector('#whatIfSim .result-title').textContent = 'Évolution d\'index projetée';
+                document.querySelector('#whatIfSim .result-subtitle').textContent = `Scénario: ${scenarioName} sur 3 parties`;
+                
+                // Update result values
+                const resultItems = document.querySelectorAll('#whatIfSim .result-item');
+                
+                // Current handicap
+                resultItems[0].querySelector('.result-value').textContent = userData.currentHandicap.toFixed(1);
+                
+                // After each game
+                for (let i = 1; i <= 3; i++) {
+                    resultItems[i].querySelector('.result-value').textContent = handicapProgression[i].toFixed(1);
+                    
+                    // Change display
+                    const change = resultItems[i].querySelector('.result-change');
+                    const difference = (handicapProgression[i] - handicapProgression[i-1]).toFixed(1);
+                    
+                    if (difference < 0) {
+                        change.className = 'result-change positive';
+                        change.innerHTML = `<i class="fas fa-arrow-down"></i> ${difference}`;
+                    } else if (difference > 0) {
+                        change.className = 'result-change negative';
+                        change.innerHTML = `<i class="fas fa-arrow-up"></i> +${difference}`;
+                    } else {
+                        change.className = 'result-change neutral';
+                        change.innerHTML = `<i class="fas fa-equals"></i> 0.0`;
+                    }
+                }
+                
+                // Update result details
+                const totalChange = (handicapProgression[3] - handicapProgression[0]).toFixed(1);
+                
+                let detailsText = `
+                    <p>Dans ce scénario, vous ${totalChange < 0 ? 'abaisseriez' : totalChange > 0 ? 'augmenteriez' : 'maintiendriez'} votre index de ${Math.abs(totalChange)} points au total sur les 3 prochaines parties, passant de ${userData.currentHandicap.toFixed(1)} à ${handicapProgression[3].toFixed(1)}.</p>
+                `;
+                
+                if (totalChange < 0) {
+                    detailsText += `<p>Notez que l'effet cumulatif est amplifié car chaque bon score fait sortir un score plus ancien/moins bon de vos 8 meilleurs différentiels.</p>`;
+                }
+                
+                document.querySelector('#whatIfSim .result-details').innerHTML = detailsText;
+                
+                // Show notification
+                showNotification("Simulation multi-parties calculée avec succès");
+            });
+
+            // Quick score save button
+            document.getElementById('saveQuickScore').addEventListener('click', function() {
+                // Get form values
+                const date = document.getElementById('scoreDate').value;
+                const grossScore = parseInt(document.getElementById('grossScore').value);
+                const sss = parseFloat(document.getElementById('scoreSSS').value);
+                const slope = parseInt(document.getElementById('scoreSlope').value);
+                const par = parseInt(document.getElementById('scorePar').value);
+                const scoreType = document.getElementById('scoreType').value;
+                
+                // Course name
+                let courseName = "Parcours personnalisé";
+                const courseValue = document.getElementById('scoreCourse').value;
+                
+                if (courseValue === 'course1') {
+                    courseName = "Golf de Saint-Germain";
+                } else if (courseValue === 'course2') {
+                    courseName = "Golf National - Albatros";
+                } else if (courseValue === 'course3') {
+                    courseName = "Fontainebleau";
+                }
+                
+                // Optional stats
+                const putts = document.getElementById('putts').value ? parseInt(document.getElementById('putts').value) : null;
+                const fairways = document.getElementById('fairways').value ? parseInt(document.getElementById('fairways').value) : null;
+                const greens = document.getElementById('greens').value ? parseInt(document.getElementById('greens').value) : null;
+                
+                // Validate required fields
+                if (!date || !grossScore || !sss || !slope || !par) {
+                    showNotification("Veuillez remplir tous les champs obligatoires", "error");
+                    return;
+                }
+                
+                // Calculate differential
+                const differential = calculateScoreDifferential(grossScore, sss, slope);
+                
+                // Create new score object
+                const newScore = {
+                    date,
+                    course: courseName,
+                    grossScore,
+                    par,
+                    sss,
+                    slope,
+                    differential,
+                    type: scoreType,
+                    usedForIndex: true, // Will be determined when recalculating handicap
+                    stats: {
+                        putts,
+                        fairways,
+                        greens
+                    }
+                };
+                
+                // Add to scores array
+                userData.scores.push(newScore);
+                
+                // Save user data
+                storage.setItem('golfindexUserData', JSON.stringify(userData));
+                
+                // Update UI
+                populateRecentScores();
+                populateScoresTable();
+                recalculateHandicap();
+                
+                // Re-initialize charts
+                initializeCharts();
+                
+                // Reset form
+                document.getElementById('grossScore').value = "";
+                document.getElementById('putts').value = "";
+                document.getElementById('fairways').value = "";
+                document.getElementById('greens').value = "";
+                
+                // Show notification
+                showNotification("Score enregistré avec succès");
+                
+                // Switch back to dashboard
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('dashboardContent').classList.add('active');
+            });
+
+            // Hole by hole score save button
+            document.getElementById('saveHoleByHole').addEventListener('click', function() {
+                // Get form values
+                const date = document.getElementById('hbhDate').value;
+                const courseValue = document.getElementById('hbhCourse').value;
+                const scoreType = document.getElementById('hbhType').value;
+                
+                // Get hole scores
+                const holeScores = [];
+                let totalScore = 0;
+                
+                for (let i = 1; i <= 18; i++) {
+                    const holeInput = document.getElementById(`hole${i}`);
+                    const score = parseInt(holeInput.value) || 0;
+                    holeScores.push(score);
+                    totalScore += score;
+                }
+                
+                // Validate scores
+                if (holeScores.some(score => score === 0)) {
+                    showNotification("Veuillez entrer un score pour chaque trou", "error");
+                    return;
+                }
+                
+                // Course details
+                let courseName, sss, slope, par;
+                
+                switch (courseValue) {
+                    case 'course1': // Golf de Saint-Germain
+                        courseName = "Golf de Saint-Germain";
+                        sss = 71.2;
+                        slope = 129;
+                        par = 71;
+                        break;
+                    case 'course2': // Golf National - Albatros
+                        courseName = "Golf National - Albatros";
+                        sss = 71.5;
+                        slope = 135;
+                        par = 72;
+                        break;
+                    case 'course3': // Fontainebleau
+                        courseName = "Fontainebleau";
+                        sss = 70.8;
+                        slope = 132;
+                        par = 72;
+                        break;
+                    default:
+                        courseName = "Parcours personnalisé";
+                        sss = 71.0;
+                        slope = 130;
+                        par = 72;
+                }
+                
+                // Optional stats
+                const putts = document.getElementById('hbhPutts').value ? parseInt(document.getElementById('hbhPutts').value) : null;
+                const fairways = document.getElementById('hbhFairways').value ? parseInt(document.getElementById('hbhFairways').value) : null;
+                const greens = document.getElementById('hbhGreens').value ? parseInt(document.getElementById('hbhGreens').value) : null;
+                
+                // Calculate differential
+                const differential = calculateScoreDifferential(totalScore, sss, slope);
+                
+                // Create new score object
+                const newScore = {
+                    date,
+                    course: courseName,
+                    grossScore: totalScore,
+                    holeScores, // Store individual hole scores
+                    par,
+                    sss,
+                    slope,
+                    differential,
+                    type: scoreType,
+                    usedForIndex: true, // Will be determined when recalculating handicap
+                    stats: {
+                        putts,
+                        fairways,
+                        greens
+                    }
+                };
+                
+                // Add to scores array
+                userData.scores.push(newScore);
+                
+                // Save user data
+                storage.setItem('golfindexUserData', JSON.stringify(userData));
+                
+                // Update UI
+                populateRecentScores();
+                populateScoresTable();
+                recalculateHandicap();
+                
+                // Re-initialize charts
+                initializeCharts();
+                
+                // Reset form (reset to par values for each hole)
+                for (let i = 1; i <= 18; i++) {
+                    const holeInput = document.getElementById(`hole${i}`);
+                    holeInput.value = i % 2 === 0 ? 4 : 5; // Alternate par 4 and 5
+                }
+                
+                document.getElementById('hbhPutts').value = "";
+                document.getElementById('hbhFairways').value = "";
+                document.getElementById('hbhGreens').value = "";
+                
+                updateHoleByHoleTotal(); // Update total
+                
+                // Show notification
+                showNotification("Score trou par trou enregistré avec succès");
+                
+                // Switch back to dashboard
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('dashboardContent').classList.add('active');
+            });
+
+            // Save settings button
+            document.getElementById('saveSettings').addEventListener('click', function() {
+                // Get settings form values
+                const name = document.getElementById('settingsName').value;
+                const club = document.getElementById('settingsClub').value;
+                const handicap = parseFloat(document.getElementById('settingsHandicap').value);
+                const target = parseFloat(document.getElementById('settingsTarget').value);
+                const theme = document.getElementById('settingsTheme').value;
+                const units = document.getElementById('settingsUnits').value;
+                
+                // Update user data
+                userData.name = name;
+                userData.club = club;
+                userData.currentHandicap = handicap;
+                userData.targetHandicap = target;
+                userData.settings.theme = theme;
+                userData.settings.units = units;
+                
+                // Save user data
+                storage.setItem('golfindexUserData', JSON.stringify(userData));
+                
+                // Update profile display
+                updateProfileDisplay();
+                
+                // Re-initialize charts
+                initializeCharts();
+                
+                // Show notification
+                showNotification("Paramètres enregistrés avec succès");
+                
+                // Switch back to dashboard
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab[data-tab="dashboard"]').classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('dashboardContent').classList.add('active');
+            });
+
+            // Quick access buttons
+            document.getElementById('addNewScore').addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab[data-tab="addScore"]').classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('addScoreContent').classList.add('active');
+            });
+
+            document.getElementById('viewFullHistory').addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab[data-tab="scoreHistory"]').classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('scoreHistoryContent').classList.add('active');
+            });
+
+            document.getElementById('viewAllStats').addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.tab[data-tab="performance"]').classList.add('active');
+                
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById('performanceContent').classList.add('active');
+            });
+
+            document.getElementById('refreshStats').addEventListener('click', function() {
+                // Animate refresh icon
+                this.classList.add('fa-spin');
+                
+                // Re-calculate stats
+                setTimeout(() => {
+                    this.classList.remove('fa-spin');
+                    showNotification("Statistiques mises à jour");
+                }, 500);
+            });
+
+            // Show notification function
+            function showNotification(message, type = "success") {
+                const notification = document.getElementById('notification');
+                const notificationText = document.getElementById('notificationText');
+                
+                // Set notification type/color
+                if (type === "error") {
+                    notification.style.backgroundColor = 'var(--danger)';
+                    notification.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span id="notificationText">${message}</span>`;
+                } else {
+                    notification.style.backgroundColor = 'var(--primary)';
+                    notification.innerHTML = `<i class="fas fa-check-circle"></i> <span id="notificationText">${message}</span>`;
+                }
+                
+                // Show notification
+                notification.classList.add('show');
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
